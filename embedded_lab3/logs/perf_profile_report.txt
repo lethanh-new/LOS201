@@ -1,0 +1,70 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 4K of event 'cycles'
+# Event count (approx.): 4934885387
+#
+# Overhead  Symbol                     Shared Object         IPC   [IPC Coverage]
+# ........  .........................  ....................  ....................
+#
+    44.97%  [.] heavy_compute          perf_target_profile   -      -            
+            |
+            ---main
+               __libc_start_call_main
+               __libc_start_main@@GLIBC_2.34
+               _start
+
+    44.05%  [.] __ieee754_log_fma      libm.so.6             -      -            
+            |
+            ---main
+               __libc_start_call_main
+               __libc_start_main@@GLIBC_2.34
+               _start
+
+     5.75%  [.] log@@GLIBC_2.29        libm.so.6             -      -            
+            |
+            ---main
+               __libc_start_call_main
+               __libc_start_main@@GLIBC_2.34
+               _start
+
+     4.87%  [.] log@plt                perf_target_profile   -      -            
+            |
+            ---main
+               __libc_start_call_main
+               __libc_start_main@@GLIBC_2.34
+               _start
+
+     0.03%  [k] 0xffffffff8fc5e5e1     [kernel.kallsyms]     -      -            
+     0.03%  [k] 0xffffffff8eb75c19     [kernel.kallsyms]     -      -            
+     0.03%  [k] 0xffffffff8fe0128a     [kernel.kallsyms]     -      -            
+     0.02%  [k] 0xffffffff8fc71199     [kernel.kallsyms]     -      -            
+     0.02%  [.] __printf_buffer_write  libc.so.6             -      -            
+     0.02%  [.] __printf_buffer        libc.so.6             -      -            
+     0.02%  [k] 0xffffffff8fbc889c     [kernel.kallsyms]     -      -            
+     0.02%  [k] 0xffffffff8ee61355     [kernel.kallsyms]     -      -            
+     0.02%  [k] 0xffffffff8ec0ef9a     [kernel.kallsyms]     -      -            
+     0.02%  [k] 0xffffffff8fc5e623     [kernel.kallsyms]     -      -            
+     0.02%  [k] 0xffffffff8fc5ad01     [kernel.kallsyms]     -      -            
+     0.02%  [k] 0xffffffff8fe00f30     [kernel.kallsyms]     -      -            
+     0.02%  [k] 0xffffffff8fc71057     [kernel.kallsyms]     -      -            
+     0.02%  [k] 0xffffffff8eb61cdd     [kernel.kallsyms]     -      -            
+     0.01%  [k] 0xffffffff8eed5d74     [kernel.kallsyms]     -      -            
+     0.01%  [k] 0xffffffff8ef0b38c     [kernel.kallsyms]     -      -            
+     0.00%  [k] 0xffffffff8ff04104     [kernel.kallsyms]     -      -            
+     0.00%  [k] 0xffffffff8eb04090     [kernel.kallsyms]     -      -            
+     0.00%  [.] _dl_load_cache_lookup  ld-linux-x86-64.so.2  -      -            
+     0.00%  [k] 0xffffffff8fc5fda4     [kernel.kallsyms]     -      -            
+     0.00%  [k] 0xffffffff8fc69cf5     [kernel.kallsyms]     -      -            
+     0.00%  [k] 0xffffffff8ebf9db5     [kernel.kallsyms]     -      -            
+     0.00%  [k] 0xffffffff8ea0e2ca     [kernel.kallsyms]     -      -            
+     0.00%  [k] 0xffffffff8ff04109     [kernel.kallsyms]     -      -            
+     0.00%  [k] 0xffffffff8fc7118c     [kernel.kallsyms]     -      -            
+     0.00%  [k] 0xffffffff8edac79b     [kernel.kallsyms]     -      -            
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

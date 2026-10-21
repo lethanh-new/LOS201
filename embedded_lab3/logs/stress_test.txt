@@ -1,0 +1,15 @@
+stress-ng: info:  [25502] setting to a 40 secs run per stressor
+stress-ng: info:  [25502] dispatching hogs: 2 cpu, 2 io, 1 vm
+stress-ng: info:  [25502] note: /proc/sys/kernel/sched_autogroup_enabled is 1 and this can impact scheduling throughput for processes not attached to a tty. Setting this to 0 may improve performance metrics
+stress-ng: info:  [25502] note: 16 cpus have scaling governors set to powersave and this can impact on performance; setting /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor to 'performance' may improve performance
+stress-ng: info:  [25507] io: this is a legacy I/O sync stressor, consider using iomix instead
+stress-ng: metrc: [25502] stressor       bogo ops real time  usr time  sys time   bogo ops/s     bogo ops/s
+stress-ng: metrc: [25502]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: metrc: [25502] cpu              149752     40.00     79.98      0.01      3743.76        1872.12
+stress-ng: metrc: [25502] io               198847     40.00      3.60     17.13      4971.18        9592.70
+stress-ng: metrc: [25502] vm              3595201     40.02     28.04     11.97     89826.91       89860.02
+stress-ng: info:  [25502] skipped: 0
+stress-ng: info:  [25502] passed: 5: cpu (2) io (2) vm (1)
+stress-ng: info:  [25502] failed: 0
+stress-ng: info:  [25502] metrics untrustworthy: 0
+stress-ng: info:  [25502] successful run completed in 40.03 secs

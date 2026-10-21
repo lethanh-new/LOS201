@@ -1,0 +1,17 @@
+Num     Type           Disp Enb Address    What
+1       breakpoint     keep y   0x0040072e in main at buggy_app.c:36
+	breakpoint already hit 1 time
+2       breakpoint     keep y   0x00400682 in process_data at buggy_app.c:7
+	breakpoint already hit 1 time
+3       breakpoint     keep n   0x0040068c in process_data at buggy_app.c:10
+	breakpoint already hit 1 time
+4       breakpoint     keep y   0x004006cc in create_message at buggy_app.c:18
+	breakpoint already hit 1 time
+5       breakpoint     keep y   0x004006fc in calculate at buggy_app.c:28
+	breakpoint already hit 1 time
+#0  calculate (a=100000, b=100000) at buggy_app.c:30
+#1  0x004007b6 in main (argc=1, argv=0x407ffde4) at buggy_app.c:50
+a = 100000
+b = 100000
+$11 = 1410065408
+$12 = 10000000000

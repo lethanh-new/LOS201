@@ -1,0 +1,68 @@
+Remote debugging using localhost:1234
+Reading symbols from /usr/arm-linux-gnueabihf/lib/ld-linux-armhf.so.3...
+warning: BFD: warning: system-supplied DSO at 0x40820000 has a corrupt string table index
+0x40810598 in _start () from /usr/arm-linux-gnueabihf/lib/ld-linux-armhf.so.3
+Breakpoint 1 at 0x400682: file apps/buggy_app_original.c, line 7.
+Continuing.
+
+Breakpoint 1, process_data (data=0x407ffc38, len=5) at apps/buggy_app_original.c:7
+7	    int sum = 0;
+#0  process_data (data=0x407ffc38, len=5) at apps/buggy_app_original.c:7
+#1  0x00400774 in main (argc=1, argv=0x407ffdd4) at apps/buggy_app_original.c:43
+data = 0x407ffc38
+len = 5
+$1 = {10, 20, 30, 40, 50}
+5	void process_data(int *data, int len)
+6	{
+7	    int sum = 0;
+8	
+9	    for (int i = 0; i <= len; i++) {
+10	        sum += data[i];
+11	    }
+12	
+13	    printf("Sum = %d\n", sum);
+14	}
+Junk at end of line specification.
+Breakpoint 2 at 0x40068c: file apps/buggy_app_original.c, line 10.
+Continuing.
+
+Breakpoint 2, process_data (data=0x407ffc38, len=5) at apps/buggy_app_original.c:10
+10	        sum += data[i];
+$2 = 5
+$3 = 5
+$4 = {10, 20, 30, 40, 50}
+$5 = (int *) 0x407ffc4c
+$6 = (int *) 0x407ffc48
+Breakpoint 3 at 0x4006cc: file apps/buggy_app_original.c, line 18.
+Continuing.
+
+Breakpoint 3, create_message (text=0x400948 "Hello Embedded Linux") at apps/buggy_app_original.c:18
+18	    char *buf = malloc(strlen(text) + 1);
+#0  create_message (text=0x400948 "Hello Embedded Linux") at apps/buggy_app_original.c:18
+#1  0x00400788 in main (argc=1, argv=0x407ffdd4) at apps/buggy_app_original.c:47
+16	char *create_message(const char *text)
+17	{
+18	    char *buf = malloc(strlen(text) + 1);
+19	
+20	    strcpy(buf, text);
+21	    
+22	
+23	    free(buf);
+24	    return buf;
+25	}
+Breakpoint 4 at 0x4006ee: file apps/buggy_app_original.c, line 24.
+Continuing.
+
+Breakpoint 4, create_message (text=0x400948 "Hello Embedded Linux") at apps/buggy_app_original.c:24
+24	    return buf;
+$7 = 0x403598 "\003\004"
+$8 = 0x400948 "Hello Embedded Linux"
+#0  create_message (text=0x400948 "Hello Embedded Linux") at apps/buggy_app_original.c:24
+#1  0x00400788 in main (argc=1, argv=0x407ffdd4) at apps/buggy_app_original.c:47
+Run till exit from #0  create_message (text=0x400948 "Hello Embedded Linux") at apps/buggy_app_original.c:24
+0x00400788 in main (argc=1, argv=0x407ffdd4) at apps/buggy_app_original.c:47
+47	    char *msg = create_message("Hello Embedded Linux");
+Value returned is $9 = 0x403598 "\003\004"
+$10 = 0x64 <error: Cannot access memory at address 0x64>
+arr = {10, 20, 30, 40, 50}
+msg = 0x64 <error: Cannot access memory at address 0x64>
