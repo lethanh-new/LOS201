@@ -273,7 +273,6 @@ find . -type f \( -name '*.md' -o -name '*.c' -o -name '*.sh' \) | sort | head -
 |---|---|
 | Lê Tiến Thành | SE201799 |
 | Lê Tấn Lộc | SE201412 |
-| Nguyễn Quang Huy Đạt | SE201415 |
 | Trần Trương Tuấn Vũ | SE196467 |
 
 > Hồ sơ LAB 01 còn ghi nhận thành viên **Trần Đình Khôi Nguyên — SE200558** trong nhóm 5 người. Danh sách từng Lab có thể khác nhau; xem trang bìa báo cáo tương ứng.
