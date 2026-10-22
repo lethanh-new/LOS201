@@ -6,7 +6,6 @@ Embedded Linux LAB01 running Linux 5.15 on an ARM Cortex-A9 platform using QEMU.
 
 - Lê Tiến Thành
 - Lê Tấn Lộc
-- Nguyễn Quang Huy Đạt
 - Trần Trương Tuấn Vũ
 - Trần Đình Khôi Nguyên
 ## Environment
