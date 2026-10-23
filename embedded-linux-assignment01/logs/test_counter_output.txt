@@ -1,0 +1,125 @@
+
+/ # sh /test_counter.sh
+
+========== ASSIGNMENT 01 - TASK 2 ==========
+
+Kernel: 5.15.0
+
+========== LOAD MODULE ==========
+
+counter_driver: loaded major=10 minor=125
+
+========== DEVICE NODE ==========
+
+crw-rw-rw-    1 root     0          10, 125 Oct 23 13:42 /dev/counter
+
+counter_driver 16384 0 - Live 0x7f005000 (O)
+
+125 counter
+
+========== PROCFS BEFORE WRITE ==========
+
+counter_value: 0
+
+total_reads: 0
+
+total_writes: 0
+
+========== AUTO INCREMENT ==========
+
+counter_driver: read value=0
+
+counter_driver: read value=1
+
+[PASS] First read returns 0
+
+[PASS] Second read returns 1
+
+========== SET 100 ==========
+
+counter_driver: set counter=100
+
+========== PROCFS AFTER WRITE ==========
+
+counter_value: 100
+
+total_reads: 2
+
+total_writes: 1
+
+counter_driver: read value=100
+
+[PASS] Set counter to 100
+
+========== RESET 0 ==========
+
+counter_driver: set counter=0
+
+========== PROCFS AFTER RESET ==========
+
+counter_value: 0
+
+total_reads: 3
+
+total_writes: 2
+
+counter_driver: read value=0
+
+[PASS] Reset counter to 0
+
+========== INVALID NEGATIVE ==========
+
+[PASS] Negative value rejected
+
+========== INVALID STRING ==========
+
+[PASS] Invalid string rejected
+
+========== FINAL PROCFS ==========
+
+counter_value: 1
+
+total_reads: 4
+
+total_writes: 2
+
+========== UNLOAD MODULE ==========
+
+counter_driver: unloaded
+
+[PASS] rmmod counter_driver
+
+[PASS] procfs cleanup
+
+========== KERNEL LOG ==========
+
+hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available
+
+counter_driver: loaded major=10 minor=125
+
+counter_driver: read value=0
+
+counter_driver: read value=1
+
+counter_driver: set counter=100
+
+counter_driver: read value=100
+
+counter_driver: set counter=0
+
+counter_driver: read value=0
+
+counter_driver: unloaded
+
+========== TEST SUMMARY ==========
+
+PASSED: 8
+
+FAILED: 0
+
+/ # echo "TASK2_EXIT_CODE=$?"
+
+TASK2_EXIT_CODE=0
+
+/ # echo "===== END_TASK2 ====="
+

@@ -1,0 +1,1 @@
+cmd_/home/letienthanh/LOS201/embedded-linux-assignment01/task1_ioctl/Module.symvers := sed 's/\.ko$$/\.o/' /home/letienthanh/LOS201/embedded-linux-assignment01/task1_ioctl/modules.order | scripts/mod/modpost    -o /home/letienthanh/LOS201/embedded-linux-assignment01/task1_ioctl/Module.symvers -e -i Module.symvers   -T -

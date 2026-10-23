@@ -1,0 +1,2 @@
+/home/letienthanh/LOS201/embedded-linux-assignment01/task2_misc/counter_driver.o
+

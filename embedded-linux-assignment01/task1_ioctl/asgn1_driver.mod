@@ -1,2 +1,2 @@
-/home/letienthanh/embedded_asgn1/task1_ioctl/asgn1_driver.o
+/home/letienthanh/LOS201/embedded-linux-assignment01/task1_ioctl/asgn1_driver.o
 

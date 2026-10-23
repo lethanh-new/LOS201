@@ -1,0 +1,17 @@
+make -C /home/letienthanh/embedded_lab1/kernel/linux-5.15 M=/home/letienthanh/LOS201/embedded-linux-assignment01/task1_ioctl \
+	ARCH=arm \
+	CROSS_COMPILE=arm-linux-gnueabihf- \
+	clean
+make[1]: Entering directory '/home/letienthanh/embedded_lab1/kernel/linux-5.15'
+  CLEAN   /home/letienthanh/LOS201/embedded-linux-assignment01/task1_ioctl/Module.symvers
+make[1]: Leaving directory '/home/letienthanh/embedded_lab1/kernel/linux-5.15'
+make -C /home/letienthanh/embedded_lab1/kernel/linux-5.15 M=/home/letienthanh/LOS201/embedded-linux-assignment01/task1_ioctl \
+	ARCH=arm \
+	CROSS_COMPILE=arm-linux-gnueabihf- \
+	modules
+make[1]: Entering directory '/home/letienthanh/embedded_lab1/kernel/linux-5.15'
+  CC [M]  /home/letienthanh/LOS201/embedded-linux-assignment01/task1_ioctl/asgn1_driver.o
+  MODPOST /home/letienthanh/LOS201/embedded-linux-assignment01/task1_ioctl/Module.symvers
+  CC [M]  /home/letienthanh/LOS201/embedded-linux-assignment01/task1_ioctl/asgn1_driver.mod.o
+  LD [M]  /home/letienthanh/LOS201/embedded-linux-assignment01/task1_ioctl/asgn1_driver.ko
+make[1]: Leaving directory '/home/letienthanh/embedded_lab1/kernel/linux-5.15'

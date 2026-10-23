@@ -1,0 +1,247 @@
+
+/ # sh /test_asgn1.sh
+
+========== ASSIGNMENT 01 - TASK 1 ==========
+
+Kernel: 5.15.0
+
+========== LOAD MODULE ==========
+
+asgn1: driver loaded, major=241
+
+[PASS] Major 241 registered
+
+[PASS] Device /dev/asgn1 exists
+
+========== RUN IOCTL TESTS ==========
+
+========== ASSIGNMENT 01: TASK 1 ==========
+
+DEVICE: /dev/asgn1
+
+RESET_IOCTL   = 0x4101
+
+STATS_IOCTL   = 0x80144102
+
+MODE_IOCTL    = 0x40044103
+
+VERSION_IOCTL = 0x80404104
+
+asgn1_driver: device opened (open_count=1)
+
+asgn1_driver: ioctl RESET_BUFFER
+
+[PASS] RESET_BUFFER ioctl
+
+asgn1_driver: ioctl GET_STATS
+
+[PASS] RESET clears buffer and counters
+
+asgn1_driver: device opened (open_count=2)
+
+asgn1_driver: device closed
+
+[PASS] Read after RESET returns EOF
+
+asgn1_driver: ioctl SET_MODE mode=1
+
+[PASS] SET_MODE = 1 (Echo)
+
+asgn1_driver: write 5 bytes, mode=1, stored=5 bytes
+
+[PASS] Write 5 bytes in Echo mode
+
+asgn1_driver: device opened (open_count=3)
+
+asgn1_driver: read 5 bytes
+
+asgn1_driver: device closed
+
+Echo read: 'hello'
+
+[PASS] Echo mode preserves data
+
+asgn1_driver: ioctl GET_STATS
+
+
+
+--- STATS AFTER ECHO ---
+
+open_count      = 3
+
+write_count     = 1
+
+read_count      = 1
+
+buffer_len      = 5
+
+last_write_size = 5
+
+asgn1_driver: ioctl SET_MODE mode=0
+
+[PASS] SET_MODE = 0 (Kernel)
+
+asgn1_driver: write 5 bytes, mode=0, stored=13 bytes
+
+[PASS] Write 5 bytes in Kernel mode
+
+asgn1_driver: device opened (open_count=4)
+
+asgn1_driver: read 13 bytes
+
+asgn1_driver: device closed
+
+Kernel read: '[KERNEL]world'
+
+[PASS] Kernel mode adds [KERNEL] prefix
+
+asgn1_driver: ioctl GET_STATS
+
+
+
+--- STATS AFTER KERNEL MODE ---
+
+open_count      = 4
+
+write_count     = 2
+
+read_count      = 2
+
+buffer_len      = 13
+
+last_write_size = 5
+
+asgn1_driver: ioctl GET_VERSION
+
+Version: asgn1_driver v1.0
+
+[PASS] GET_VERSION ioctl
+
+asgn1_driver: unsupported ioctl 0xdeadbeef
+
+[PASS] Invalid ioctl returns ENOTTY
+
+asgn1_driver: invalid mode 2
+
+[PASS] Invalid mode returns EINVAL
+
+asgn1_driver: ioctl RESET_BUFFER
+
+[PASS] Final RESET_BUFFER
+
+asgn1_driver: ioctl GET_STATS
+
+[PASS] Final counters are zero
+
+asgn1_driver: device opened (open_count=5)
+
+asgn1_driver: device closed
+
+[PASS] Final buffer is empty
+
+asgn1_driver: ioctl GET_STATS
+
+
+
+--- FINAL STATS ---
+
+open_count      = 5
+
+write_count     = 0
+
+read_count      = 0
+
+buffer_len      = 0
+
+last_write_size = 0
+
+asgn1_driver: device closed
+
+
+
+========== TEST SUMMARY ==========
+
+PASSED: 18
+
+FAILED: 0
+
+[PASS] All ioctl test cases
+
+========== UNLOAD MODULE ==========
+
+asgn1: driver unloaded
+
+[PASS] Unload asgn1_driver
+
+[PASS] Major number cleanup
+
+========== DRIVER KERNEL LOG ==========
+
+asgn1: driver loaded, major=241
+
+asgn1_driver: device opened (open_count=1)
+
+asgn1_driver: ioctl RESET_BUFFER
+
+asgn1_driver: ioctl GET_STATS
+
+asgn1_driver: device opened (open_count=2)
+
+asgn1_driver: device closed
+
+asgn1_driver: ioctl SET_MODE mode=1
+
+asgn1_driver: write 5 bytes, mode=1, stored=5 bytes
+
+asgn1_driver: device opened (open_count=3)
+
+asgn1_driver: read 5 bytes
+
+asgn1_driver: device closed
+
+asgn1_driver: ioctl GET_STATS
+
+asgn1_driver: ioctl SET_MODE mode=0
+
+asgn1_driver: write 5 bytes, mode=0, stored=13 bytes
+
+asgn1_driver: device opened (open_count=4)
+
+asgn1_driver: read 13 bytes
+
+asgn1_driver: device closed
+
+asgn1_driver: ioctl GET_STATS
+
+asgn1_driver: ioctl GET_VERSION
+
+asgn1_driver: unsupported ioctl 0xdeadbeef
+
+asgn1_driver: invalid mode 2
+
+asgn1_driver: ioctl RESET_BUFFER
+
+asgn1_driver: ioctl GET_STATS
+
+asgn1_driver: device opened (open_count=5)
+
+asgn1_driver: device closed
+
+asgn1_driver: ioctl GET_STATS
+
+asgn1_driver: device closed
+
+asgn1: driver unloaded
+
+========== SCRIPT SUMMARY ==========
+
+PASSED: 5
+
+FAILED: 0
+
+/ # echo "TASK1_EXIT_CODE=$?"
+
+TASK1_EXIT_CODE=0
+
+/ # echo "===== END_TASK1 ====="
+

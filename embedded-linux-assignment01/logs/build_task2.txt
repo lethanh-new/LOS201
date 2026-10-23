@@ -1,0 +1,16 @@
+make -C /home/letienthanh/embedded_lab1/kernel/linux-5.15 M=/home/letienthanh/LOS201/embedded-linux-assignment01/task2_misc \
+	ARCH=arm \
+	CROSS_COMPILE=arm-linux-gnueabihf- \
+	clean
+make[1]: Entering directory '/home/letienthanh/embedded_lab1/kernel/linux-5.15'
+make[1]: Leaving directory '/home/letienthanh/embedded_lab1/kernel/linux-5.15'
+make -C /home/letienthanh/embedded_lab1/kernel/linux-5.15 M=/home/letienthanh/LOS201/embedded-linux-assignment01/task2_misc \
+	ARCH=arm \
+	CROSS_COMPILE=arm-linux-gnueabihf- \
+	modules
+make[1]: Entering directory '/home/letienthanh/embedded_lab1/kernel/linux-5.15'
+  CC [M]  /home/letienthanh/LOS201/embedded-linux-assignment01/task2_misc/counter_driver.o
+  MODPOST /home/letienthanh/LOS201/embedded-linux-assignment01/task2_misc/Module.symvers
+  CC [M]  /home/letienthanh/LOS201/embedded-linux-assignment01/task2_misc/counter_driver.mod.o
+  LD [M]  /home/letienthanh/LOS201/embedded-linux-assignment01/task2_misc/counter_driver.ko
+make[1]: Leaving directory '/home/letienthanh/embedded_lab1/kernel/linux-5.15'

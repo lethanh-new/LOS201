@@ -1,0 +1,1 @@
+cmd_/home/letienthanh/LOS201/embedded-linux-assignment01/task2_misc/modules.order := {   echo /home/letienthanh/LOS201/embedded-linux-assignment01/task2_misc/counter_driver.ko; :; } | awk '!x[$$0]++' - > /home/letienthanh/LOS201/embedded-linux-assignment01/task2_misc/modules.order
