@@ -1,282 +1,233 @@
 # LOS201 — Embedded Linux Systems
 
-> **FPT University · ARMv7-A / Cortex-A9 · Linux 5.15 · QEMU Versatile Express · Ubuntu 24.04**
->
-> Workspace thực hành từ cấu hình/khởi động Linux nhúng, lập trình kernel module, đến debug, profiling và phân tích độ trễ thời gian thực.
+> **FPT University · Embedded Linux Systems (LOS201)**  
+> **Ubuntu 24.04 · ARMv7-A / Cortex-A9 · Linux 5.15 · QEMU Versatile Express (`vexpress-a9`)**
 
-**Tài liệu:** [LAB 01](embedded_lab1/README.md) · [LAB 02](embedded_lab2/README.md) · [LAB 03](embedded_lab3/README.md)
+Repository tổng hợp quá trình học tập và thực hành **Embedded Linux Systems** với **3 bài Lab và 2 Assignment**. Nội dung đi từ xây dựng một hệ thống Linux nhúng trên ARM, phát triển kernel module và giao tiếp userspace–kernel, đến debugging, profiling và ứng dụng giám sát cảm biến đa luồng.
 
-## Mục lục
+Mã nguồn chủ yếu sử dụng **C, Shell, Makefile/Kbuild, Linux Kernel APIs, POSIX Threads** và công cụ cross-compilation `arm-linux-gnueabihf-`.
 
-- [1. Giới thiệu](#1-giới-thiệu)
-- [2. Môi trường thực nghiệm](#2-môi-trường-thực-nghiệm)
-- [3. Kiến trúc Host–Target](#3-kiến-trúc-hosttarget)
-- [4. Cấu trúc workspace](#4-cấu-trúc-workspace)
-- [5. Chuẩn bị công cụ](#5-chuẩn-bị-công-cụ)
-- [6. Quick start](#6-quick-start)
-- [7. Kết quả chính của từng Lab](#7-kết-quả-chính-của-từng-lab)
-- [8. Quy ước thực nghiệm và lưu kết quả](#8-quy-ước-thực-nghiệm-và-lưu-kết-quả)
-- [9. Troubleshooting](#9-troubleshooting)
-- [10. Nhóm thực hiện và tài liệu](#10-nhóm-thực-hiện-và-tài-liệu)
+**Đi nhanh đến từng bài:** [Lab 01](embedded_lab1/README.md) · [Lab 02](embedded_lab2/README.md) · [Lab 03](embedded_lab3/README.md) · [Assignment 01](embedded-linux-assignment01/README.md) · [Assignment 02](embedded-linux-assignment02/README.md)
 
-## 1. Giới thiệu
+---
 
-Workspace này phát triển một nền tảng **Embedded Linux ARMv7-A** chạy trên máy ảo QEMU `vexpress-a9`. Các phần thực hành kế thừa nhau:
+## 1. Tổng quan repository
 
-| Bài | Chủ đề | Đầu ra chính | README |
+| Bài | Chủ đề | Nội dung chính | Chi tiết |
 |---|---|---|---|
-| LAB 01 | Kernel configuration, U-Boot, BusyBox, initramfs, QEMU | `zImage`, `.dtb`, rootfs, initramfs boot được | [Chi tiết](embedded_lab1/README.md) |
-| LAB 02 | Character device, `procfs`/`sysfs`, MTD/JFFS2, BusyBox init | `lab2_driver.ko`, `/dev/lab2`, NAND giả lập, initramfs auto-load | [Chi tiết](embedded_lab2/README.md) |
-| LAB 03 | Remote GDB, Valgrind, `strace`/`perf`, `cyclictest` | ARM debugging, leak report, CPU hotspots, histogram latency | [Chi tiết](embedded_lab3/README.md) |
+| **Lab 01** | Kernel Build & System Boot | Linux 5.15, U-Boot, BusyBox, Device Tree, initramfs, boot QEMU | [README Lab 01](embedded_lab1/README.md) |
+| **Lab 02** | Linux Device Drivers | Character device, `read()/write()`, mutex, procfs/sysfs, MTD & JFFS2 | [README Lab 02](embedded_lab2/README.md) |
+| **Lab 03** | Debugging & Profiling | Remote GDB, Valgrind, `strace`, `perf`, `cyclictest`, `stress-ng` | [README Lab 03](embedded_lab3/README.md) |
+| **Assignment 01** | IOCTL & Misc Drivers | IOCTL character driver, buffer modes, driver statistics, atomic counter | [README Assignment 01](embedded-linux-assignment01/README.md) |
+| **Assignment 02** | Sensor Monitoring System | Kernel sensor, 4 POSIX threads, circular buffer, message queues, alerts, logging | [README Assignment 02](embedded-linux-assignment02/README.md) |
 
-### Luồng học tập
+### Cấu trúc thư mục
 
-```mermaid
-flowchart LR
-    A[LAB 01<br/>Kernel + Device Tree + BusyBox] --> B[Hệ thống ARM boot được]
-    B --> C[LAB 02<br/>Character Driver + procfs/sysfs + JFFS2]
-    B --> D[LAB 03<br/>GDB + Valgrind + Perf + Cyclictest]
-    C --> E[Kernel/userspace integration]
-    D --> F[Quan sát và đo kiểm]
-```
-
-**Phạm vi:** Các phép thử là kết quả trong QEMU ARM hoặc trên Ubuntu Host, **không phải** benchmark hiệu năng phần cứng ARM vật lý. Các nội dung PREEMPT_RT ở LAB 03 hiện là đối chiếu lý thuyết, chưa có phép đo RT kernel thực tế.
-
-## 2. Môi trường thực nghiệm
-
-| Thành phần | Phiên bản / cấu hình |
+| Thư mục | Vai trò |
 |---|---|
-| Host | Ubuntu 24.04 LTS (Noble), x86_64 |
-| Host kernel (phiên thí nghiệm) | `6.8.0-147-generic`, PREEMPT_DYNAMIC |
-| Target | ARMv7-A / Cortex-A9, QEMU `vexpress-a9` |
-| Target kernel | Linux `5.15.0` |
-| Cấu hình QEMU thường dùng | RAM 512 MiB, 2 vCPU, serial `ttyAMA0` |
-| Toolchain | `arm-linux-gnueabihf-` (ARM hard-float ABI) |
-| Userspace | BusyBox 1.35.0, initramfs (`cpio` + `gzip`) |
-| Bootloader LAB 01 | U-Boot 2022.04 |
-| Ngôn ngữ chính | C, Shell, Gnuplot |
-| Công cụ LAB 03 | `gdb-multiarch`, `gdbserver`, `valgrind`, `strace`, `perf`, `cyclictest`, `stress-ng` |
+| [`embedded_lab1/`](embedded_lab1/) | Xây dựng kernel, root filesystem và nền tảng QEMU ARM |
+| [`embedded_lab2/`](embedded_lab2/) | Driver ký tự, procfs/sysfs và thực hành MTD/JFFS2 |
+| [`embedded_lab3/`](embedded_lab3/) | Công cụ debugging, memory analysis và performance profiling |
+| [`embedded-linux-assignment01/`](embedded-linux-assignment01/) | Hai bài tập kernel driver: IOCTL và Misc Counter |
+| [`embedded-linux-assignment02/`](embedded-linux-assignment02/) | Hệ thống giám sát nhiệt độ/độ ẩm đa luồng |
 
-Các lệnh trong README giả định terminal Bash trên Ubuntu. **Đường dẫn thực tế có thể khác** giữa các lần thực hành; dùng `pwd`, `ls`, `find` để xác minh trước khi chạy.
+Các thư mục con như `driver/`, `app/`, `apps/`, `rootfs/`, `output/`, `logs/` và `bao_cao/` được sử dụng tùy nội dung mỗi bài. README trong từng thư mục chứa hướng dẫn và kết quả chi tiết hơn.
 
-## 3. Kiến trúc Host–Target
+## 2. Môi trường phát triển
 
-```mermaid
-flowchart TB
-    subgraph HOST[Ubuntu Host — x86_64]
-      SRC[Source C / Kernel / BusyBox]
-      XCC[ARM Cross GCC + Kbuild]
-      NAT[Native GCC]
-      GDB[gdb-multiarch]
-      TOOLS[Valgrind · strace · perf · cyclictest]
-      SRC --> XCC
-      SRC --> NAT
-      NAT --> TOOLS
-    end
-    subgraph GUEST[QEMU System ARM — Cortex-A9]
-      KERNEL[Linux 5.15 + DTB]
-      ROOT[BusyBox initramfs]
-      APP[ARM applications + lab2_driver.ko]
-      SERVER[gdbserver]
-      KERNEL --> ROOT --> APP
-      APP --- SERVER
-    end
-    XCC -->|ARM ELF / .ko / zImage| KERNEL
-    GDB <-->|TCP localhost:1234 → QEMU hostfwd| SERVER
-```
+| Thành phần | Cấu hình |
+|---|---|
+| **Host** | Ubuntu 24.04 LTS, x86_64 |
+| **Target** | ARMv7-A, ARM Cortex-A9 |
+| **Emulator** | QEMU `vexpress-a9`, 2 vCPU, 512 MiB RAM |
+| **Kernel** | Linux 5.15.0 |
+| **Toolchain** | `arm-linux-gnueabihf-gcc` (hard-float ABI) |
+| **Bootloader** | U-Boot 2022.04 |
+| **Userspace** | BusyBox 1.35.0, initramfs |
+| **Development** | C, Shell, GCC, Makefile, Kbuild, Git |
+| **Analysis** | GDB/GDBserver, Valgrind, `strace`, `perf`, `cyclictest`, `stress-ng` |
 
-**Ba dấu nhắc không được nhầm:**
+**Lưu ý Host/Guest:** Module `.ko` được cross-compile cho ARM và chạy trong **QEMU Guest**. Các phép đo Valgrind, perf hoặc latency thực hiện trên **Ubuntu Host** phải được ghi nhận riêng; chúng không tương đương hoàn toàn với phép đo trên phần cứng ARM thật.
 
-```text
-HOST   $       cd, gcc, make, qemu-system-arm, perf, valgrind
-QEMU   / #     uname, insmod, cat /proc/..., gdbserver
-GDB    (gdb)   target remote, break, continue, backtrace
-```
+---
 
-**Lab 2 MTD/JFFS2** và **Lab 3 cyclictest** chạy trên Host. Character driver và ARM remote debugging chạy trong QEMU. Valgrind/Perf chính được đo trên bản ứng dụng biên dịch cho Host.
+## 3. Lab 01 — Linux Kernel Build & Boot
 
-## 4. Cấu trúc workspace
+**Mục tiêu:** Tạo một hệ thống Embedded Linux tối giản và khởi động thành công trên bo mạch ARM Cortex-A9 giả lập.
 
-Đường dẫn dự kiến của project m:
+**Nội dung chính:**
 
-```text
-~/LOS201/
-├── README.md                         # Tài liệu tổng quan (file này)
-├── embedded_lab1/
-│   ├── README.md
-│   ├── configs/                      # kernel.config, busybox.config (nếu đã lưu)
-│   ├── output/                       # zImage, DTB, initramfs.cpio.gz
-│   └── rootfs/initramfs/             # BusyBox root filesystem
-├── embedded_lab2/
-│   ├── README.md
-│   ├── driver/                       # lab2_driver.c, Makefile, .ko
-│   ├── rootfs/initramfs/             # rcS, module, test scripts
-│   ├── output/                       # initramfs_lab2.cpio.gz
-│   └── logs/                         # driver, MTD/JFFS2, test evidence
-└── embedded_lab3/
-    ├── README.md
-    ├── apps/                         # buggy_app*, leaky_app*, perf_target*
-    ├── rootfs/                       # ARM userspace variants
-    ├── output/                       # initramfs_lab3*.cpio.gz
-    └── logs/                         # GDB, Valgrind, perf, hist, PNG
-```
+- Cấu hình và cross-compile **Linux kernel 5.15** cho ARMv7-A.
+- Tạo **kernel image (`zImage`)** và **Device Tree Blob (`vexpress-v2p-ca9.dtb`)**.
+- Làm quen với **U-Boot 2022.04** và các tham số khởi động kernel.
+- Biên dịch **BusyBox 1.35.0**, xây dựng **initramfs** và cấu hình tiến trình `init`.
+- Boot với **QEMU**, kiểm tra serial console, CPU, filesystem và các lệnh Linux cơ bản.
 
-> **Lưu ý đường dẫn:** Trong một số lệnh LAB 03 đã kiểm chứng, kernel LAB 01 được lấy từ `~/embedded_lab1/output/` (ngoài `~/LOS201/`). Hai vị trí này **không mặc nhiên giống nhau**. Kiểm tra trước khi boot:
->
-> ```bash
-> ls -l ~/embedded_lab1/output/zImage ~/LOS201/embedded_lab1/output/zImage 2>/dev/null
-> ```
->
-> README mô tả cấu trúc và các file thường gặp, không khẳng định tất cả file đều có trong bản clone của người đọc.
+**Kết quả:** Hệ thống boot được Linux 5.15 trên QEMU ARMv7 và truy cập BusyBox shell. Kernel, Device Tree và root filesystem này tiếp tục được sử dụng cho các bài sau.
 
-## 5. Chuẩn bị công cụ
+**[Xem hướng dẫn và kết quả Lab 01](embedded_lab1/README.md)**
 
-### 5.1. Cài trên Ubuntu Host
+## 4. Lab 02 — Linux Device Drivers & MTD/JFFS2
+
+**Mục tiêu:** Phát triển kernel module và thực hiện trao đổi dữ liệu giữa userspace và kernel space.
+
+**Nội dung chính:**
+
+- Xây dựng **character device driver** với các thao tác `open()`, `read()`, `write()` và `release()`.
+- Tạo giao diện **`/dev/lab2`** để chương trình userspace đọc/ghi dữ liệu.
+- Sử dụng **mutex** để bảo vệ buffer và dữ liệu được chia sẻ.
+- Xuất trạng thái qua **`/proc/lab2_info`** và các thuộc tính **sysfs**.
+- Cross-compile `lab2_driver.ko` cho ARM, tích hợp module vào initramfs và kiểm tra bằng script.
+- Thực hành **MTD/JFFS2** với NAND giả lập (`nandsim`): kiểm tra MTD, tạo image, mount và kiểm tra dữ liệu.
+
+**Kết quả:** Phần character device và procfs/sysfs đã chạy PASS trong QEMU. Thí nghiệm MTD/JFFS2 được thực hiện riêng trên Ubuntu Host và cần xác định đúng NAND giả lập trước các lệnh ghi/xóa.
+
+> **Cảnh báo MTD:** Tuyệt đối không mặc định `/dev/mtd0` là NAND giả lập. Phải kiểm tra `/proc/mtd` và `mtdinfo` trước khi dùng `flash_erase` hoặc `nandwrite` để tránh tác động đến flash thật.
+
+**[Xem hướng dẫn và kết quả Lab 02](embedded_lab2/README.md)**
+
+## 5. Lab 03 — Debugging & Performance Analysis
+
+**Mục tiêu:** Phát hiện lỗi chương trình, kiểm tra bộ nhớ, phân tích system calls và đánh giá scheduling latency.
+
+| Phần | Công cụ | Nội dung |
+|---|---|---|
+| **A** | GDB, GDBserver | Remote debugging ứng dụng ARM trên QEMU |
+| **B** | Valgrind | Kiểm tra memory leaks và xác minh bản sửa |
+| **C** | `strace`, `perf` | Phân tích system calls, CPU cycles, instructions và hotspots |
+| **D** | `cyclictest`, `stress-ng` | Đo độ trễ lập lịch ở trạng thái bình thường và có tải |
+
+**Kết quả tiêu biểu đã ghi nhận:**
+
+- GDB xác định **3 lỗi**: array out-of-bounds, use-after-free và integer overflow.
+- Bản ứng dụng đã sửa chạy thành công trên Ubuntu Host, `exit code = 0`, không có lỗi được AddressSanitizer/UndefinedBehaviorSanitizer báo trong lần kiểm thử.
+- Valgrind: **16,900 bytes / 250 blocks definitely lost** ở bản lỗi; sau sửa còn **0 bytes definitely lost**.
+- `strace` và `perf` cung cấp syscall statistics, CPU metrics và thông tin về hotspots.
+- `cyclictest` được chạy cả khi bình thường và khi chịu tải từ `stress-ng`.
+
+**Phạm vi:** Thực nghiệm latency trên Host/QEMU chưa chứng minh khả năng **hard real-time** hay hiệu năng của một board ARM vật lý.
+
+**[Xem hướng dẫn và kết quả Lab 03](embedded_lab3/README.md)**
+
+## 6. Assignment 01 — IOCTL & Misc Device Drivers
+
+**Mục tiêu:** Xây dựng hai Linux kernel drivers với giao diện và cơ chế quản lý trạng thái khác nhau.
+
+### Task 1 — IOCTL Character Driver
+
+- Tạo **`asgn1_driver.ko`** và thiết bị **`/dev/asgn1`**.
+- Cài đặt **4 lệnh IOCTL**: `RESET_BUFFER`, `GET_STATS`, `SET_MODE`, `GET_VERSION`.
+- Hỗ trợ **Echo Mode** (giữ nguyên dữ liệu) và **Kernel Mode** (thêm prefix `[KERNEL]`).
+- Quản lý buffer và thống kê số lần mở/đọc/ghi; sử dụng mutex và xử lý mã lỗi phù hợp.
+- Kiểm thử bằng một chương trình userspace và script tự động.
+
+### Task 2 — Misc Counter Driver
+
+- Tạo **`counter_driver.ko`** và thiết bị **`/dev/counter`** bằng `misc_register()`.
+- Sử dụng `atomic_t` kết hợp mutex để quản lý bộ đếm.
+- Mỗi lượt đọc hợp lệ trả về giá trị hiện tại rồi tăng counter; ghi số nguyên hợp lệ để đặt lại.
+- Xuất thống kê qua **`/proc/counter_info`**; kiểm tra input sai và quá trình unload.
+
+**Kết quả kiểm thử đã lưu:**
+
+| Bài kiểm tra | PASS | FAIL |
+|---|---:|---:|
+| Task 1 — IOCTL test application | 18 | 0 |
+| Task 1 — Shell test script | 5 | 0 |
+| Task 2 — Counter test script | 8 | 0 |
+| **Tổng** | **31** | **0** |
+
+**[Xem hướng dẫn và kết quả Assignment 01](embedded-linux-assignment01/README.md)**
+
+## 7. Assignment 02 — Sensor Monitoring System
+
+**Mục tiêu:** Phát triển hệ thống giám sát nhiệt độ/độ ẩm mô phỏng, kết hợp **Linux kernel driver** và ứng dụng **multithreading** trên ARM.
+
+**Các thành phần chính:**
+
+- **Sensor driver `sms_sensor_driver.ko`:** mô phỏng mẫu nhiệt độ/độ ẩm; cung cấp **`/dev/sms_sensor`**, thống kê **`/proc/sms_stats`** và cấu hình sampling interval bằng `ioctl()`.
+- **Sensor Thread:** đọc dữ liệu định kỳ và đo scheduling jitter.
+- **Processor Thread:** tính rolling average 10 mẫu, phát hiện bất thường và phát thông điệp.
+- **Alert Thread:** xử lý cảnh báo **`TEMP_HIGH`**, **`HUMID_HIGH`**, **`TEMP_SPIKE`**.
+- **Logger Thread:** lưu sample và alert vào **`/tmp/sms.log`**.
+- **Synchronization & IPC:** circular buffer, mutex, condition variable và POSIX message queues.
+- **Scheduling:** đánh giá `SCHED_OTHER` và `SCHED_FIFO`, đo average/max/P99 jitter và histogram.
+
+**Kết quả tiêu biểu đã báo cáo:**
+
+- Lượt chạy **60 giây, chu kỳ 500 ms**: **118 samples produced**, **2 dropped**, **0 buffer overflows**; `read_count = 118` sau chạy.
+- Valgrind trên **Host với mock sensor**: các lần chạy được ghi nhận **0 memory errors**, không còn heap blocks bị mất khi thoát.
+- Ở bài thử **50 ms có CPU load** trên QEMU, median P99 jitter qua ba lượt giảm từ **575 µs** (`SCHED_OTHER`) xuống **336 µs** (`SCHED_FIFO`). Đây là kết quả trong điều kiện thí nghiệm, không phải bảo đảm trên phần cứng thật.
+
+**Demo bắt buộc trong đề:** boot QEMU và load module; chạy `sms_app -v`; giải thích alert; kiểm tra log; dừng ứng dụng và xem summary. Phần quay video phải được kiểm tra riêng, không được coi là đã hoàn thành chỉ từ log chương trình.
+
+**[Xem hướng dẫn và kết quả Assignment 02](embedded-linux-assignment02/README.md)**
+
+---
+
+## 8. Quick Start — QEMU ARM
+
+### Cài đặt công cụ cơ bản trên Ubuntu Host
 
 ```bash
 sudo apt update
 sudo apt install -y \
-  build-essential git make bc bison flex cpio gzip file rsync \
-  libncurses-dev libssl-dev libelf-dev \
-  gcc-arm-linux-gnueabihf binutils-arm-linux-gnueabihf \
-  qemu-system-arm u-boot-tools gdb-multiarch \
-  valgrind strace linux-tools-common linux-tools-generic \
-  rt-tests stress-ng gnuplot mtd-utils
+    build-essential git make cpio gzip \
+    gcc-arm-linux-gnueabihf binutils-arm-linux-gnueabihf \
+    qemu-system-arm gdb-multiarch
 ```
 
-Một số phiên bản Ubuntu đặt công cụ `perf` trong gói theo phiên bản kernel; kiểm tra `perf version`. Nếu thiếu, cài gói `linux-tools-$(uname -r)` phù hợp kho phân phối. Với JFFS2, module `nandsim`/`mtdblock` phụ thuộc cấu hình kernel Host.
+### Boot hệ thống nền từ Lab 01
 
-### 5.2. Kiểm tra công cụ
-
-```bash
-uname -a
-qemu-system-arm --version | head -1
-arm-linux-gnueabihf-gcc --version | head -1
-gdb-multiarch --version | head -1
-perf version
-cyclictest --version
-command -v mkfs.jffs2
-```
-
-### 5.3. Biến môi trường gợi ý
-
-```bash
-export LOS201_HOME="$HOME/LOS201"
-export ARCH=arm
-export CROSS_COMPILE=arm-linux-gnueabihf-
-
-# Cấu hình theo thư mục source Kernel 5.15 THỰC TẾ trên máy:
-# export KERNEL_SRC="$HOME/linux-5.15"
-```
-
-Không biên dịch kernel module với header của kernel Host 6.8; `.ko` ARM phải build với **kernel source/config tương thích target Linux 5.15**.
-
-## 6. Quick start
-
-### LAB 01 — Boot hệ thống Linux cơ bản
+**Chạy trong Ubuntu Host** (terminal có dấu `$`):
 
 ```bash
 cd ~/LOS201/embedded_lab1
+
+# Kiểm tra file trước khi chạy.
 ls -lh output/zImage output/vexpress-v2p-ca9.dtb output/initramfs.cpio.gz
 
 qemu-system-arm -M vexpress-a9 -cpu cortex-a9 -m 512M -smp 2 \
-  -kernel output/zImage \
-  -dtb output/vexpress-v2p-ca9.dtb \
-  -initrd output/initramfs.cpio.gz \
-  -append 'console=ttyAMA0,115200 rdinit=/sbin/init mem=512M' \
-  -nographic -no-reboot
+    -kernel output/zImage \
+    -dtb output/vexpress-v2p-ca9.dtb \
+    -initrd output/initramfs.cpio.gz \
+    -append "console=ttyAMA0,115200 rdinit=/sbin/init" \
+    -nographic -no-reboot
 ```
 
-Trong QEMU (`/ #`):
+**Chạy trong QEMU Guest** (terminal có dấu `/ #`):
 
 ```sh
-uname -a
+uname -m
+uname -r
 cat /proc/cpuinfo
-ps
 mount
-cat /proc/cmdline
 ```
 
-Để thoát QEMU `-nographic`: **Ctrl+A**, thả ra rồi nhấn **X**.
+**Thoát QEMU `-nographic`:** nhấn **Ctrl+A**, thả tay rồi nhấn **X**.
 
-### LAB 02 — Boot hệ thống có character driver
+Với Lab 02 và hai Assignment, cần sử dụng **initramfs riêng phù hợp với bài**, sau đó chạy module/test script tương ứng. Không mặc định initramfs Lab 01 đã chứa tất cả driver hoặc ứng dụng.
 
-```bash
-cd ~/LOS201/embedded_lab2
-ls -lh output/initramfs_lab2.cpio.gz
-# Xem lệnh boot và cách xác định kernel LAB 01 tại embedded_lab2/README.md.
-```
+## 9. Nhóm thực hiện
 
-Trong QEMU, kiểm tra `/dev/lab2`, `/proc/lab2_info`, các sysfs attributes và chạy hai test script. Thí nghiệm flash NAND/JFFS2 **thực hiện riêng trên Host**, không chạy trên NAND vật lý.
+**FPT University — Embedded Linux Systems (LOS201)**  
+**Giảng viên:** Phạm Thế Vinh
 
-### LAB 03 — Debug, memory, CPU và latency
+| STT | Thành viên | Mã số sinh viên |
+|---:|---|---|
+| 1 | **Lê Tiến Thành** | **SE201799** |
+| 2 | Lê Tấn Lộc | SE201412 |
+| 3 | Trần Đình Khôi Nguyên | SE200558 |
+| 4 | Trần Trương Tuấn Vũ | SE196467 |
 
-```bash
-cd ~/LOS201/embedded_lab3
-ls apps/buggy_app_original.c apps/leaky_app.c apps/perf_target_profile.c
-ls logs/valgrind_report.txt logs/perf_profile_report.txt logs/hist_standard.txt
-```
+## 10. Ghi chú và tài liệu
 
-- ARM/GDB: xem [LAB 03 — Part A](embedded_lab3/README.md#4-part-a--remote-debugging-arm)
-- Valgrind/VmRSS: [LAB 03 — Part B](embedded_lab3/README.md#5-part-b--memory-analysis)
-- `strace` / `perf`: [LAB 03 — Part C](embedded_lab3/README.md#6-part-c--performance-profiling)
-- `cyclictest`: [LAB 03 — Part D](embedded_lab3/README.md#7-part-d--real-time-latency)
+- Các kết quả ở README này được tổng hợp từ **các lượt thực hành/log đã ghi nhận**. Kết quả khi chạy lại có thể khác do thay đổi kernel, build, CPU load hoặc cấu hình QEMU.
+- Luôn phân biệt chương trình chạy trên **Host x86_64** với chương trình/kernel module chạy trên **Guest ARMv7**.
+- Hệ thống sử dụng **sensor giả lập**, không phải dữ liệu đo từ cảm biến vật lý.
+- Không dùng kết quả QEMU làm bằng chứng về độ trễ phần cứng hoặc chuẩn hard real-time.
+- Mọi thông tin build/test chuyên sâu, mã nguồn và tài liệu báo cáo nằm trong README hoặc thư mục của từng Lab/Assignment.
 
-## 7. Kết quả chính của từng Lab
+---
 
-| Lab | Kết quả xác thực | Giới hạn |
-|---|---|---|
-| 01 | Boot Linux 5.15 ARMv7 vào BusyBox; PID 1 là `init`; `proc`, `sysfs`, `tmpfs` mount thành công; U-Boot 2022.04 đã thử nghiệm | Lệnh boot U-Boot và địa chỉ nạp phụ thuộc cấu hình/memory map |
-| 02 | ARM `lab2_driver.ko`, major 240; `/dev/lab2` read/write; procfs/sysfs; NAND giả lập 16 MiB và JFFS2 remount vẫn giữ dữ liệu | Không phải kiểm thử chịu tải concurrent toàn diện; NAND nằm trong RAM Host |
-| 03 | GDB bắt ba lỗi; Valgrind 16.900 → 0 bytes leaked; perf 4.446 samples; max latency baseline 50 µs và stress 299 µs | Không có benchmark trên ARM thật và chưa thử nghiệm PREEMPT_RT |
-
-Các con số là **dữ liệu của phiên đo đã lưu**, không phải chuẩn đầu ra cố định mà máy khác phải đạt.
-
-## 8. Quy ước thực nghiệm và lưu kết quả
-
-- **Không chỉnh số cho đẹp.** Mỗi nhận xét phải truy về source, cấu hình, log hoặc ảnh tương ứng.
-- Tách bản source cố ý có lỗi (`*_original.c`, `leaky_app.c`) khỏi bản đã sửa (`*_fixed.c`).
-- Ghi rõ **Host** hay **QEMU Guest**, kiến trúc, loại kernel, đơn vị và thông số workload.
-- `output/` chứa hiện vật boot/build; `logs/` chứa raw log và ảnh; báo cáo Word/PDF không thay thế source/log.
-- `perf record` dùng samples thống kê, tỷ lệ overhead không phải phần trăm thời gian tuyệt đối.
-- `cyclictest` phản ánh wake-up latency của scheduler, **không** đo deadline end-to-end của robot.
-- Không commit mật khẩu, SSH key, rootfs có thông tin riêng tư hoặc dump kernel chứa dữ liệu nhạy cảm.
-
-Gợi ý kiểm tra trước khi nộp:
-
-```bash
-cd ~/LOS201
-find embedded_lab1/output embedded_lab2/output embedded_lab3/output -maxdepth 1 -type f -printf '%p\n' 2>/dev/null
-find embedded_lab3/logs -maxdepth 1 -type f | sort
-find . -type f \( -name '*.md' -o -name '*.c' -o -name '*.sh' \) | sort | head -80
-```
-
-## 9. Troubleshooting
-
-| Hiện tượng | Cách kiểm tra / hướng xử lý |
-|---|---|
-| QEMU không tìm thấy `zImage`/DTB | Kiểm tra thư mục hiện tại với `pwd`, `ls`; dùng đường dẫn tuyệt đối đã xác minh. |
-| Boot xong không có shell | Xem `console=ttyAMA0`, `rdinit=/sbin/init`, BusyBox static, `inittab`, `rcS`, archive `cpio`. |
-| Lệnh ARM ELF chạy trên Host báo lỗi format | Chạy trong QEMU ARM hoặc với ARM emulator thích hợp, không chạy trực tiếp trên x86. |
-| `insmod` báo `invalid module format` | Xem `modinfo -F vermagic`, `uname -r` trên Guest và `.config` kernel. |
-| Không thấy `/dev/lab2` | Xem `lsmod`, `/proc/devices`, `dmesg` và `rcS` của Lab 2. |
-| `gdbserver` không kết nối được | Kiểm tra IP Guest, TCP port 1234, port forwarding; `target remote 127.0.0.1:1234` dùng trên Host. |
-| Perf báo `perf_event_paranoid=4` | Thử `sudo perf record`; **không** tự hạ quyền bảo mật nếu chưa cần. |
-| `perf report` từ chối chủ sở hữu file | Chỉ với `.data` tự tạo và đã kiểm tra: dùng `perf report -f`. |
-| Histogram khác máy khác | Kiểm tra kernel, stress workload, giới hạn `-h`, số mẫu và overflow; không sao chép kết quả máy khác. |
-
-## 10. Nhóm thực hiện và tài liệu
-
-**Nhóm LAB 02–03:**
-
-| Thành viên | MSSV |
-|---|---|
-| Lê Tiến Thành | SE201799 |
-| Lê Tấn Lộc | SE201412 |
-| Trần Trương Tuấn Vũ | SE196467 |
-
-> Hồ sơ LAB 01 còn ghi nhận thành viên **Trần Đình Khôi Nguyên — SE200558** trong nhóm 5 người. Danh sách từng Lab có thể khác nhau; xem trang bìa báo cáo tương ứng.
-
-**Nguồn đối chiếu:** Đề LAB01/LAB02/LAB03 Embedded Linux Systems, báo cáo và log thực nghiệm của nhóm; cấu trúc README được tham khảo từ [embedded-linux-kernel-development (myNameDyK)](https://github.com/myNameDyK/embedded-linux-kernel-development) nhưng **các lệnh, môi trường và số liệu ở đây được viết theo workspace LOS201**, không lấy benchmark của repo tham khảo.
-
-**Đọc thêm:** [Linux kernel](https://www.kernel.org/doc/html/latest/) · [QEMU](https://www.qemu.org/docs/master/) · [BusyBox](https://busybox.net/) · [U-Boot](https://docs.u-boot.org/) · [Valgrind](https://valgrind.org/docs/manual/) · [Linux perf security](https://www.kernel.org/doc/html/latest/admin-guide/perf-security.html).
+*Educational repository for **LOS201 — Embedded Linux Systems**, FPT University. Built and documented for coursework, experimentation and reproducible learning.*
